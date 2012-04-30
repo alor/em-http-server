@@ -1,6 +1,6 @@
 # Em::Http::Server
 
-TODO: Write a gem description
+Simple http server to be used with Eventmachine.
 
 ## Installation
 
@@ -18,7 +18,33 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+  require 'eventmachine'
+  require 'em-http-server'
+
+  class HTTPHandler < EM::Http::Server
+
+    def process_http_request
+      puts  @http_request_method
+      puts  @http_request_uri
+      puts  @http_query_string
+      puts  @http_protocol
+      puts  @http[:cookie]
+      puts  @http[:content_type]
+      puts  @http_content
+      puts  @http.inspect
+
+      response = EM::DelegatedHttpResponse.new(self)
+      response.status = 200
+      response.content_type 'text/html'
+      response.content = 'It works'
+      response.send_response
+    end
+
+  end
+
+  EM::run do
+    EM::start_server("0.0.0.0", 80, HTTPHandler)
+  end
 
 ## Contributing
 
