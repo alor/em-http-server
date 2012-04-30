@@ -47,7 +47,7 @@ EORESP
   def test_simple_get
     received_response = nil
 
-    EventMachine::HttpServer.module_eval do
+    EventMachine::HttpServer.class_eval do
       def generate_response
         TestResponse_1
       end
@@ -75,7 +75,7 @@ EORESP
 
   # This frowsy-looking protocol handler allows the test harness to make some
   # its local variables visible, so we can set them here and they can be asserted later.
-  class MyTestServer < EM::Http::Server
+  class MyTestServer < EventMachine::HttpServer
 
     def initialize *args
       super
@@ -97,7 +97,10 @@ EORESP
     # collect all the stuff we want to assert outside the actual test,
     # to ensure it gets asserted even if the test catches some exception.
     received_response = nil
-    request_parms = {}
+    request_http = {}
+    request_uri = ""
+    request_query = ""
+    request_method = ""
 
 
     EventMachine.run do
@@ -107,12 +110,10 @@ EORESP
         # we can assert the values later.
         conn.instance_eval do
           @assertions = proc {
-            parms = %w( PATH_INFO QUERY_STRING HTTP_COOKIE IF_NONE_MATCH
-            CONTENT_TYPE REQUEST_METHOD REQUEST_URI )
-            parms.each {|parm|
-              # request_parms is bound to a local variable visible in this context.
-              request_parms[parm] = ENV[parm]
-            }
+            request_method = @http_request_method
+            request_uri = @http_request_uri
+            request_query = @http_query_string
+            request_http = @http
           }
         end
       end
@@ -134,13 +135,12 @@ EORESP
     end
 
     assert_equal( TestResponse_1, received_response )
-    assert_equal( path_info, request_parms["PATH_INFO"] )
-    assert_equal( query_string, request_parms["QUERY_STRING"] )
-    assert_equal( cookie, request_parms["HTTP_COOKIE"] )
-    assert_equal( etag, request_parms["IF_NONE_MATCH"] )
-    assert_equal( nil, request_parms["CONTENT_TYPE"] )
-    assert_equal( "GET", request_parms["REQUEST_METHOD"] )
-    assert_equal( path_info, request_parms["REQUEST_URI"] )
+    assert_equal( path_info, request_uri )
+    assert_equal( query_string, request_query )
+    assert_equal( cookie, request_http[:cookie] )
+    assert_equal( etag, request_http[:if_none_match] )
+    assert_equal( nil, request_http[:content_type] )
+    assert_equal( "GET", request_method )
   end
 
 
@@ -160,7 +160,7 @@ EORESP
         conn.instance_eval do
           @assertions = proc do
             received_header_string = @http_headers
-            received_header_ary = @http_headers.split(/\0/).map {|line| line.split(/:\s*/, 2) }
+            received_header_ary = @http.map {|line| line }
           end
         end
       end
@@ -184,8 +184,8 @@ EORESP
       EventMachine.add_timer(1) {raise "timed out"} # make sure the test completes
     end
 
-    assert_equal( "aaa: 111\0bbb: 222\0ccc: 333\0ddd: 444\0\0", received_header_string )
-    assert_equal( [["aaa","111"], ["bbb","222"], ["ccc","333"], ["ddd","444"]], received_header_ary )
+    assert_equal( ["GET / HTTP/1.1", "aaa: 111", "bbb: 222", "ccc: 333", "ddd: 444"], received_header_string )
+    assert_equal( [[:aaa,"111"], [:bbb,"222"], [:ccc,"333"], [:ddd,"444"]], received_header_ary )
   end
 
 
@@ -207,8 +207,8 @@ EORESP
         # The @http_post_content variable is set automatically.
         conn.instance_eval do
           @assertions = proc do
-            received_post_content = @http_post_content
-            received_content_type = ENV["CONTENT_TYPE"]
+            received_post_content = @http_content
+            received_content_type = @http[:content_type]
           end
         end
       end
@@ -232,8 +232,8 @@ EORESP
       EventMachine.defer cb, eb
     end
 
-    assert_equal( received_post_content, post_content )
-    assert_equal( received_content_type, content_type )
+    assert_equal( post_content, received_post_content)
+    assert_equal( content_type, received_content_type)
   end
 
 end
