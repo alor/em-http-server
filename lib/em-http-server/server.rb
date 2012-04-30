@@ -35,17 +35,23 @@ module EventMachine
       # get the http METHOD, URI and PROTOCOL
       def parse_first_header(line)
 
+        # split the line into:  METHOD URI PROTOCOL
+        # eg:  GET / HTTP1/1
         parsed = line.split(' ')
 
+        # a correct request has three parts
         send_error(400, "Bad request") unless parsed.size == 3
 
         @http_request_method, uri, @http_protocol = parsed
 
+        # uri must begin with a /
         send_error(400, "Bad request") unless uri.start_with? '/'
 
+        # optional query string
         @http_request_uri, @http_query_string = uri.split('?')
       end
 
+      # send back to the client an HTTP error
       def send_error(code, desc)
         string = "HTTP1/1 #{code} #{desc}\r\n"
         string << "Connection: close\r\n"
