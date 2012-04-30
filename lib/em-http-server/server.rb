@@ -9,7 +9,7 @@ module EventMachine
       # Protocol::HeaderAndContentProtocol does the dirty job for us
       # it will pass headers and content, we just need to parse the headers
       # the fill the right variables
-      def receive_request headers, content
+      def receive_request(headers, content)
 
         # save the whole headers array, verbatim
         @http_headers = headers
@@ -45,7 +45,7 @@ module EventMachine
         @http_request_method, uri, @http_protocol = parsed
 
         # uri must begin with a /
-        send_error(400, "Bad request") unless uri.start_with? '/'
+        send_error(400, "Bad request") unless uri.start_with?('/')
 
         # optional query string
         @http_request_uri, @http_query_string = uri.split('?')

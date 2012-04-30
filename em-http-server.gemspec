@@ -12,4 +12,6 @@ Gem::Specification.new do |gem|
   gem.name          = "em-http-server"
   gem.require_paths = ["lib"]
   gem.version       = "0.1.0"
+
+  gem.add_runtime_dependency "eventmachine"
 end
