@@ -2,7 +2,7 @@
 Gem::Specification.new do |gem|
   gem.authors       = ["alor"]
   gem.email         = ["alberto.ornaghi@gmail.com"]
-  gem.description   = %q{Simple http server in ruby for eventmachine}
+  gem.description   = %q{Simple http server for eventmachine}
   gem.summary       = %q{Simple http server for eventmachine with the same interface as evma_httpserver}
   gem.homepage      = ""
 
