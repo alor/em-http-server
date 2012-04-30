@@ -28,9 +28,10 @@ Or install it yourself as:
               puts  @http_request_uri
               puts  @http_query_string
               puts  @http_protocol
+              puts  @http_content
               puts  @http[:cookie]
               puts  @http[:content_type]
-              puts  @http_content
+              # you have all the http headers in this hash
               puts  @http.inspect
 
               response = EM::DelegatedHttpResponse.new(self)
