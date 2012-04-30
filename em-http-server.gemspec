@@ -1,11 +1,9 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/em-http-server/version', __FILE__)
-
 Gem::Specification.new do |gem|
   gem.authors       = ["alor"]
   gem.email         = ["alberto.ornaghi@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Simple http server in ruby for eventmachine}
+  gem.summary       = %q{Simple http server for eventmachine with the same interface as evma_httpserver}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
@@ -13,5 +11,5 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "em-http-server"
   gem.require_paths = ["lib"]
-  gem.version       = Em::Http::Server::VERSION
+  gem.version       = "0.0.1"
 end
