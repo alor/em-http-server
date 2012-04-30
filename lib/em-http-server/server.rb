@@ -34,8 +34,26 @@ module EventMachine
       # parse the first HTTP header line
       # get the http METHOD, URI and PROTOCOL
       def parse_first_header(line)
-        @http_request_method, uri, @http_protocol = line.split(' ')
+
+        parsed = line.split(' ')
+
+        send_error(400, "Bad request") unless parsed.size == 3
+
+        @http_request_method, uri, @http_protocol = parsed
+
+        send_error(400, "Bad request") unless uri.start_with? '/'
+
         @http_request_uri, @http_query_string = uri.split('?')
+      end
+
+      def send_error(code, desc)
+        string = "HTTP1/1 #{code} #{desc}\r\n"
+        string << "Connection: close\r\n"
+        string << "Content-type: text/plain\r\n"
+        string << "\r\n"
+        string << "Detected error: HTTP code #{code}"
+        send_data string
+        close_connection_after_writing
       end
 
     end
@@ -52,7 +70,6 @@ if __FILE__ == $0
       puts  @http_request_uri
       puts  @http_query_string
       puts  @http_protocol
-
       puts  @http[:cookie]
       puts  @http[:content_type]
       puts  @http_content

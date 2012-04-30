@@ -236,4 +236,35 @@ EORESP
     assert_equal( content_type, received_content_type)
   end
 
+
+  def test_invalid
+    received_response = nil
+
+    EventMachine.run do
+      EventMachine.start_server(TestHost, TestPort, MyTestServer) do |conn|
+        conn.instance_eval do
+          @assertions = proc do
+          end
+        end
+      end
+
+      cb = proc do
+        tcp = TCPSocket.new TestHost, TestPort
+        data = [
+          "GET foo HTTP/1.1\r\n",
+          "\r\n"
+        ].join
+        tcp.write data
+        received_response = tcp.read
+      end
+      eb = proc { EventMachine.stop }
+      EventMachine.defer cb, eb
+
+      EventMachine.add_timer(1) {raise "timed out"} # make sure the test completes
+    end
+
+    assert_equal( "HTTP1/1 400 Bad request\r\nConnection: close\r\nContent-type: text/plain\r\n\r\nDetected error: HTTP code 400", received_response )
+  end
+
+
 end
