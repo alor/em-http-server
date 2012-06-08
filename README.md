@@ -39,7 +39,7 @@ Or install it yourself as:
               response.content = 'It works'
               response.send_response
         end
-        
+
     end
 
     EM::run do

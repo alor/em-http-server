@@ -2,7 +2,7 @@ require 'rubygems'
 require 'eventmachine'
 
 module EventMachine
-  module Http
+  module HttpServer
     class Server < EM::P::HeaderAndContentProtocol
 
       # everything starts from here.
