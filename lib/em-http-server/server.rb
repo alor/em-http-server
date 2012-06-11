@@ -29,6 +29,11 @@ module EventMachine
         if respond_to?(:process_http_request)
           process_http_request
         end
+      rescue Exception => e
+        # invoke the method in the user-provided instance
+        if respond_to?(:http_request_errback)
+          http_request_errback
+        end
       end
 
       # parse the first HTTP header line
@@ -60,6 +65,7 @@ module EventMachine
         string << "Detected error: HTTP code #{code}"
         send_data string
         close_connection_after_writing
+        raise("server error #{code}")
       end
 
     end
