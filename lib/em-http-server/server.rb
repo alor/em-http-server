@@ -49,9 +49,6 @@ module EventMachine
 
         @http_request_method, uri, @http_protocol = parsed
 
-        # uri must begin with a /
-        send_error(400, "Bad request") unless uri.start_with?('/')
-
         # optional query string
         @http_request_uri, @http_query_string = uri.split('?')
       end
