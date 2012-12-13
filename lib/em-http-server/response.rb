@@ -142,7 +142,7 @@ module EventMachine
 		#
 		def fixup_headers
 			if @content
-				@headers["Content-length"] = @content.to_s.length
+				@headers["Content-length"] = @content.to_s.bytesize
 			elsif @chunks
 				@headers["Transfer-encoding"] = "chunked"
 				# Might be nice to ENSURE there is no content-length header,
