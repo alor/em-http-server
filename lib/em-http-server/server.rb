@@ -32,7 +32,7 @@ module EventMachine
       rescue Exception => e
         # invoke the method in the user-provided instance
         if respond_to?(:http_request_errback)
-          http_request_errback
+          http_request_errback e
         end
       end
 
