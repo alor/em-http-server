@@ -41,6 +41,11 @@ Or install it yourself as:
               response.send_response
         end
 
+        def http_request_errback e
+          # printing the whole exception
+          puts e.inspect
+        end
+
     end
 
     EM::run do
