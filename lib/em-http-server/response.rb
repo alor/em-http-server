@@ -53,6 +53,7 @@ module EventMachine
 
 		def initialize
 			@headers = {}
+      @keep_connection_open = false
 		end
 
 		def keep_connection_open arg=true
