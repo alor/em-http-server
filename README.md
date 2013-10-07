@@ -21,7 +21,7 @@ Or install it yourself as:
     require 'eventmachine'
     require 'em-http-server'
 
-    class HTTPHandler < EM::Http::Server
+    class HTTPHandler < EM::HttpServer::Server
 
         def process_http_request
               puts  @http_request_method
