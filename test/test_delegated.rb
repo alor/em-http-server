@@ -1,16 +1,7 @@
 require 'test/unit'
 require 'em-http-server'
 
-begin
-  once = false
-  require 'eventmachine'
-rescue LoadError => e
-  raise e if once
-  once = true
-  require 'rubygems'
-  retry
-end
-
+require 'eventmachine'
 
 #--------------------------------------
 

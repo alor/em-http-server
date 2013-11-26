@@ -41,11 +41,11 @@ module EventMachine
       def parse_first_header(line)
 
         # split the line into:  METHOD URI PROTOCOL
-        # eg:  GET / HTTP1/1
+        # eg:  GET / HTTP/1.1
         parsed = line.split(' ')
 
         # a correct request has three parts
-        send_error(400, "Bad request") unless parsed.size == 3
+        return bad_parsing unless parsed.size == 3
 
         @http_request_method, uri, @http_protocol = parsed
 
@@ -53,16 +53,26 @@ module EventMachine
         @http_request_uri, @http_query_string = uri.split('?')
       end
 
-      # send back to the client an HTTP error
-      def send_error(code, desc)
-        string = "HTTP1/1 #{code} #{desc}\r\n"
+      def bad_parsing
+        code = 400
+        desc = "Bad request"
+        string = respond_to?(:http_error_string) ? http_error_string(code, desc) : default_error_string(code, desc)
+        send_error string
+        raise("#{code} #{desc}")
+      end
+
+      def default_error_string(code, desc)
+        string = "HTTP/1.1 #{code} #{desc}\r\n"
         string << "Connection: close\r\n"
         string << "Content-type: text/plain\r\n"
         string << "\r\n"
         string << "Detected error: HTTP code #{code}"
+      end
+
+      # send back to the client an HTTP error
+      def send_error(string)
         send_data string
         close_connection_after_writing
-        raise("server error #{code}")
       end
 
     end
@@ -72,7 +82,7 @@ end
 
 if __FILE__ == $0
 
-  class HTTPHandler < EM::Http::Server
+  class HTTPHandler < EM::HttpServer::Server
 
     def process_http_request
       puts  @http_request_method

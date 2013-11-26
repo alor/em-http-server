@@ -1,22 +1,13 @@
 require 'test/unit'
 require 'em-http-server'
 
-begin
-  once = false
-  require 'eventmachine'
-rescue LoadError => e
-  raise e if once
-  once = true
-  require 'rubygems'
-  retry
-end
-
+require 'eventmachine'
 
 
 #--------------------------------------
 
 module EventMachine
-  class HttpServer < EM::Http::Server
+  class HttpHandler < EM::HttpServer::Server
     def process_http_request
       send_data generate_response()
       close_connection_after_writing
@@ -47,7 +38,7 @@ EORESP
   def test_simple_get
     received_response = nil
 
-    EventMachine::HttpServer.class_eval do
+    EventMachine::HttpHandler.class_eval do
       def generate_response
         TestResponse_1
       end
@@ -55,7 +46,7 @@ EORESP
 
 
     EventMachine.run do
-      EventMachine.start_server TestHost, TestPort, EventMachine::HttpServer
+      EventMachine.start_server TestHost, TestPort, EventMachine::HttpHandler
       EventMachine.add_timer(1) {raise "timed out"} # make sure the test completes
 
       cb = proc do
@@ -75,7 +66,7 @@ EORESP
 
   # This frowsy-looking protocol handler allows the test harness to make some
   # its local variables visible, so we can set them here and they can be asserted later.
-  class MyTestServer < EventMachine::HttpServer
+  class MyTestServer < EventMachine::HttpHandler
 
     def initialize *args
       super
@@ -251,7 +242,7 @@ EORESP
       cb = proc do
         tcp = TCPSocket.new TestHost, TestPort
         data = [
-          "GET foo HTTP/1.1\r\n",
+          "GET HTTP/1.1\r\n",
           "\r\n"
         ].join
         tcp.write data
@@ -263,7 +254,42 @@ EORESP
       EventMachine.add_timer(1) {raise "timed out"} # make sure the test completes
     end
 
-    assert_equal( "HTTP1/1 400 Bad request\r\nConnection: close\r\nContent-type: text/plain\r\n\r\nDetected error: HTTP code 400", received_response )
+    assert_equal( "HTTP/1.1 400 Bad request\r\nConnection: close\r\nContent-type: text/plain\r\n\r\nDetected error: HTTP code 400", received_response )
+  end
+
+  def test_invalid_custom
+    received_response = nil
+
+    MyTestServer.class_eval do
+      def http_error_string(code, desc)
+        return 'custom'
+      end
+    end
+
+    EventMachine.run do
+      EventMachine.start_server(TestHost, TestPort, MyTestServer) do |conn|
+        conn.instance_eval do
+          @assertions = proc do
+          end
+        end
+      end
+
+      cb = proc do
+        tcp = TCPSocket.new TestHost, TestPort
+        data = [
+          "GET HTTP/1.1\r\n",
+          "\r\n"
+        ].join
+        tcp.write data
+        received_response = tcp.read
+      end
+      eb = proc { EventMachine.stop }
+      EventMachine.defer cb, eb
+
+      EventMachine.add_timer(1) {raise "timed out"} # make sure the test completes
+    end
+
+    assert_equal( "custom", received_response )
   end
 
 
