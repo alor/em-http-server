@@ -30,10 +30,7 @@ module EventMachine
 
         # invoke the method in the user-provided instance
         if respond_to?(:process_http_request)
-          operation = Proc.new do
-            process_http_request
-          end
-          EM.defer(operation, Proc.new{})
+          process_http_request
         end
       rescue Exception => e
         # invoke the method in the user-provided instance
