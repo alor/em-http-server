@@ -92,6 +92,13 @@ EORESP
     request_uri = ""
     request_query = ""
     request_method = ""
+    request_http_ip_address = ""
+
+    EventMachine::Connection.class_eval do
+      def get_peername
+        "\x02\x00\xC5\x13\x7F\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00"
+      end
+    end
 
 
     EventMachine.run do
@@ -105,6 +112,7 @@ EORESP
             request_uri = @http_request_uri
             request_query = @http_query_string
             request_http = @http
+            request_http_ip_address = @http_ip_address
           }
         end
       end
@@ -132,6 +140,7 @@ EORESP
     assert_equal( etag, request_http[:if_none_match] )
     assert_equal( nil, request_http[:content_type] )
     assert_equal( "GET", request_method )
+    assert_equal( "127.0.0.1", request_http_ip_address)
   end
 
 

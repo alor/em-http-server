@@ -25,6 +25,9 @@ module EventMachine
         # save the binary content
         @http_content = content
 
+        # get the ip address of the connected peer
+        @http_ip_address = Socket.unpack_sockaddr_in(get_peername).last
+
         # invoke the method in the user-provided instance
         if respond_to?(:process_http_request)
           operation = Proc.new do
