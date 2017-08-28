@@ -83,7 +83,7 @@ module EventMachine
 			h = (@headers["Set-cookie"] ||= [])
 			if ck.length > 0
 				h.clear
-				add_set_cookie *ck
+				add_set_cookie(*ck)
 			else
 				h
 			end
